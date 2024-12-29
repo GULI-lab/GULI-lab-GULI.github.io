@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <title>地图显示</title>
+    <style>
+        html,
+        body,
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 定位按钮样式 */
+        #locate-button {
+            background-color: #009688;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            position: absolute;
+            top: 83%;
+            left: 95%;
+            z-index: 1; /* 确保按钮在地图上方显示 */
+        }
+
+        /* 放大按钮样式 */
+        #zoom-in-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            position: absolute;
+            top: 88%;
+            left: 95%;
+            z-index: 1;
+        }
+
+        /* 缩小按钮样式 */
+        #zoom-out-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            position: absolute;
+            top: 93%;
+            left: 95%;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <!-- 加载地图JSAPI脚本 -->
+    <script src="https://webapi.amap.com/maps?v=2.0&key=eeb85d791db5dcc9698ea2a50a2f02e2"></script>
+    <script>
+        // 定义初始缩放级别
+        const initialZoom = 17;
+        var map = new AMap.Map('container', {
+            viewMode: '2D', // 默认使用 2D 模式，如果希望使用带有俯仰角的 3D 模式，请设置 viewMode: '3D'
+            zoom: initialZoom, // 初始化地图层级，使用定义的初始缩放级别变量
+            center: [103.872224, 30.216875] // 初始化地图中心点
+        });
+
+        // 创建定位按钮元素
+        var locateButton = document.createElement('button');
+        locateButton.id = 'locate-button';
+        locateButton.textContent = '定位';
+        document.body.appendChild(locateButton);
+
+        // 创建放大按钮元素
+        var zoomInButton = document.createElement('button');
+        zoomInButton.id = 'zoom-in-button';
+        zoomInButton.textContent = '放大';
+        document.body.appendChild(zoomInButton);
+
+        // 创建缩小按钮元素
+        var zoomOutButton = document.createElement('button');
+        zoomOutButton.id = 'zoom-out-button';
+        zoomOutButton.textContent = '缩小';
+        document.body.appendChild(zoomOutButton);
+
+        // 用于在地图上添加定位标记的图标对象
+        var locationMarker;
+
+        // 获取设备地理位置信息的函数
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                console.log("该浏览器不支持获取地理位置信息。");
+            }
+        }
+
+        // 成功获取地理位置后执行的函数，在地图上添加对应的标记并设置地图中心等
+        function showPosition(position) {
+            var lnglat = [position.coords.longitude, position.coords.latitude];
+            if (!locationMarker) {
+                // 如果定位标记不存在，则创建并添加到地图上
+                locationMarker = new AMap.Marker({
+                    position: lnglat,
+                    map: map
+                });
+            } else {
+                // 如果标记已存在，更新其位置
+                locationMarker.setPosition(lnglat);
+            }
+            // 将地图中心点设置为获取到的位置坐标
+            map.setCenter(lnglat);
+            // 恢复地图缩放级别为初始值
+            map.setZoom(initialZoom);
+        }
+
+        // 获取地理位置信息出错时执行的函数
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    console.log("用户拒绝了获取地理位置的请求。");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    console.log("无法获取当前位置信息。");
+                    break;
+                case error.TIMEOUT:
+                    console.log("获取地理位置信息超时。");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    console.log("出现未知错误，无法获取地理位置信息。");
+                    break;
+            }
+        }
+
+        // 给定位按钮添加点击事件监听器，点击时触发获取位置操作
+        locateButton.addEventListener('click', function () {
+            getLocation();
+        });
+
+        // 给放大按钮添加点击事件监听器，点击时放大地图
+        zoomInButton.addEventListener('click', function () {
+            var currentZoom = map.getZoom();
+            map.setZoom(currentZoom + 1);
+        });
+
+        // 给缩小按钮添加点击事件监听器，点击时缩小地图
+        zoomOutButton.addEventListener('click', function () {
+            var currentZoom = map.getZoom();
+            map.setZoom(currentZoom - 1);
+        });
+
+        // 当页面加载完成后，可以选择自动尝试获取一次地理位置信息（也可去掉，仅通过按钮触发）
+        window.onload = function () {
+            // getLocation();
+        };
+    </script>
+</body>
+
+</html>
